@@ -1,0 +1,8 @@
+#! /usr/local/bin/show abc
+
+echo "this is a script exec"
+echo "参数个数是: $#"
+echo "参数1: $0"
+echo "参数2: $1"
+echo "参数3: $2"
+echo "参数4: $3"

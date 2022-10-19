@@ -1,0 +1,7 @@
+this is a write test!
+this is father!
+pid:0 global:11 0x55fdffcca010 local:81 0x7fff435a0b88
+Done
+this is father!
+pid:3187 global:10 0x55fdffcca010 local:80 0x7fff435a0b88
+Done
