@@ -1,6 +1,6 @@
 
-TARGE := sigsetjmp
-SRC:= sigsetjmp.c
+TARGE := sleep
+SRC:= sleep.c
 
 $(TARGE):$(SRC)
 	gcc -o $@ $^

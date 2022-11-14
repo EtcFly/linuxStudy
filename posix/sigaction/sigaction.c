@@ -18,7 +18,7 @@
 #include <sys/types.h>
 #include <stdbool.h>
 
-#if 1
+#if 0
 void show_signal_set(const sigset_t *set)
 {
     bool show_flag = false;
@@ -188,3 +188,31 @@ int main(int argc, char *argv[])
     return 0;
 }
 #endif
+
+void signal_cb(int signo)
+{
+    printf("recv signal:%d\r\n", signo);
+}
+
+int main(int agrc, char *argv[])
+{
+    struct sigaction act;
+
+    // signal(SIGINT, signal_cb);
+    sigemptyset(&act.sa_mask);
+    sigaddset(&act.sa_mask, SIGINT);
+    act.sa_flags = 0;
+    act.sa_handler = signal_cb;
+    if (sigaction(SIGINT, &act, NULL) < 0)
+    {
+        perror("err!");
+    }
+
+    for (;;)
+    {
+        pause();
+        printf("get finish!!\r\n");
+    }
+    printf("Down!\r\n");
+    return 0;
+}

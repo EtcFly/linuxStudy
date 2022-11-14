@@ -1,9 +1,9 @@
 
-TARGE := sigsetjmp
-SRC:= sigsetjmp.c
+TARGE := pthread
+SRC:= pthread.c
 
 $(TARGE):$(SRC)
-	gcc -o $@ $^
+	gcc -o $@ $^ -lpthread
 
 clean:
 	rm -rf $(TARGE)
