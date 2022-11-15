@@ -3,7 +3,7 @@ TARGE := pthread
 SRC:= pthread.c
 
 $(TARGE):$(SRC)
-	gcc -o $@ $^ -lpthread
+	gcc -o $@ $^ -lpthread -g
 
 clean:
 	rm -rf $(TARGE)
