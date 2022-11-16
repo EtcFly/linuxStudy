@@ -18,12 +18,12 @@
 
 /**
  * @brief 条件变量相关API操作
- * pthread_cond_init: 条件变量初始化
- * pthread_cond_destroy: 条件变量销毁
- * pthread_cond_signal: 发送信号
- * pthread_cond_broadcast: 广播信号
- * pthread_cond_wait: 等待信号
- * pthread_cond_timedwait: 带超时的等待信号
+ * pthread_condattr_init: 条件变量初始化
+ * pthread_condattr_destroy: 条件变量销毁
+ * pthread_condattr_getpshared: 发送信号
+ * pthread_condattr_setpshared: 广播信号
+ * pthread_condattr_getclock: 等待信号
+ * pthread_condattr_setclock: 带超时的等待信号
  */
 
 #define EXEC_RETURN_ZERO(x)              \

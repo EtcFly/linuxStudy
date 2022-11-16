@@ -20,15 +20,10 @@
 
 /**
  * @brief 读写锁常用接口如下:
- * pthread_rwlock_init: 读写锁初始化
- * pthread_rwlock_destroy: 读写锁销毁
- * pthread_rwlock_rdlock: 读锁加锁
- * pthread_rwlock_tryrdlock: 尝试读锁加锁
- * pthread_rwlock_timedrdlock: 带超时的读加锁
- * pthread_rwlock_wrlock: 写加锁
- * pthread_rwlock_trywrlock: 尝试写加锁
- * pthread_rwlock_timedwrlock: 带超时的写加锁
- * pthread_rwlock_unlock: 解锁
+ * pthread_rwlockattr_init: 读写锁初始化
+ * pthread_rwlockattr_destroy: 读写锁销毁
+ * pthread_rwlockattr_getpshared: 读锁加锁
+ * pthread_rwlockattr_setpshared: 尝试读锁加锁
  */
 #define EXEC_RETURN_ZERO(x)              \
     do                                   \

@@ -17,9 +17,10 @@
 
 /**
  * @brief 屏障相关接口API
- * pthread_barrier_init： 屏障初始化
- * pthread_barrier_destroy: 屏障销毁
- * pthread_barrier_wait: 屏障等待
+ * pthread_barrierattr_init 屏障初始化
+ * pthread_barrierattr_destroy: 屏障销毁
+ * pthread_barrierattr_getpshared: 屏障等待
+ * pthread_barrierattr_setpshared
  */
 
 
