@@ -126,10 +126,10 @@ int main(int argc, char *argv[])
     pthread_attr_setguardsize(&init_attr, 1 * 1024); //默认会页对齐
     show_guard_size(&init_attr);
 
-     show_stack_addr(&init_attr); //接口被弃用
-     pthread_attr_setstack(&init_attr, &buffer[0], sizeof(buffer));
-     printf("stack buffer address:%p\r\n", buffer);
-     show_stack_addr(&init_attr);
+    show_stack_addr(&init_attr); //接口被弃用
+    pthread_attr_setstack(&init_attr, &buffer[0], sizeof(buffer));
+    printf("stack buffer address:%p\r\n", buffer);
+    show_stack_addr(&init_attr);
 
     if (0 != pthread_create(&tid, &init_attr, new_thread, (void *)1))
     {
@@ -142,8 +142,7 @@ int main(int argc, char *argv[])
 
     sleep(2);
     show_pthread_info(__FUNCTION__);
-
-    printf("Down!\r\n");
+    .printf("Down!\r\n");
     pthread_exit(0);
     printf("test run here!\r\n");
     // return 0;

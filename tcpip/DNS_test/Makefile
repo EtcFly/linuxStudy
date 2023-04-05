@@ -1,9 +1,9 @@
 
-TARGE := time
-SRC:= time.c
+TARGE := main
+SRC:= main.c
 
 $(TARGE):$(SRC)
-	gcc -g -o  $@ $^
+	gcc -o $@ $^
 
 clean:
 	rm -rf $(TARGE)

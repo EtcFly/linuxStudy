@@ -40,6 +40,28 @@
             printf("%s [FAIL]\r\n", #x); \
         }                                \
     } while (0)
+
+#define EXEC_RETURN(x)                   \
+    do                                   \
+    {                                    \
+        if ((x))                         \
+        {                                \
+            printf("%s [FAIL]\r\n", #x); \
+        }                                \
+    } while (0)
+
+#define EXEC_RETURN_GOTO(x, to)          \
+    do                                   \
+    {                                    \
+        if (!(x))                        \
+        {                                \
+            printf("%s [FAIL]\r\n", #x); \
+            {                            \
+                to;                      \
+            }                            \
+        }                                \
+    } while (0)
+
 void show_pthread_info(const char *str)
 {
     printf("%s:pid:%llu tid:%llX\r\n", str, (unsigned long long)getpid(), (unsigned long long)pthread_self());
@@ -279,6 +301,9 @@ int main(int argc, char *argv[])
 
 #if 1
 #include <errno.h>
+/**
+ * @brief 测试锁的健壮性属性
+ */
 void *mutex_robust_thread(void *arg)
 {
     printf("%s thread start!\r\n", __FUNCTION__);
@@ -291,7 +316,7 @@ void *mutex_robust_thread(void *arg)
             if (EOWNERDEAD == ret)
             {
                 printf("pthread_mutex_consistent solve!\r\n");
-                EXEC_RETURN_ZERO(pthread_mutex_consistent(&lock) == 0);
+                EXEC_RETURN_ZERO(pthread_mutex_consistent(&lock) == 0); //恢复到阻塞之前的状态
                 EXEC_RETURN_ZERO(pthread_mutex_unlock(&lock) == 0);
                 EXEC_RETURN_ZERO(pthread_mutex_lock(&lock) == 0);
             }
@@ -305,7 +330,7 @@ void *mutex_robust_thread(void *arg)
 
         printf("this is [%s] thread!！！！！\r\n", __FUNCTION__);
         sleep(2);
-        EXEC_RETURN_ZERO(pthread_mutex_unlock(&lock));
+        EXEC_RETURN_ZERO(pthread_mutex_unlock(&lock) == 0);
         usleep(1000);
     }
     pthread_exit((void *)199);
@@ -366,5 +391,79 @@ int main(int argc, char *argv[])
 
     printf("Down!\r\n");
     pthread_exit((void *)0);
+}
+#endif
+
+#if 0
+#include <stdbool.h>
+#include <errno.h>
+#include <string.h>
+#include <wait.h>
+/**
+ * @brief 进程间共享互斥锁(需要共享内存, 本历程后面在补充)
+ *
+ * @param argc
+ * @param argv
+ * @return int
+ */
+int main(int argc, char *argv[])
+{
+    int ret;
+    pthread_t tid;
+    pthread_mutexattr_t mutex_attr;
+
+    EXEC_RETURN_ZERO(0 == pthread_mutexattr_init(&mutex_attr));
+
+    show_mutex_attr_getrobust(&mutex_attr);
+    EXEC_RETURN_ZERO(0 == pthread_mutexattr_setrobust(&mutex_attr, PTHREAD_MUTEX_ROBUST));
+    show_mutex_attr_getrobust(&mutex_attr);
+
+    show_mutex_attr_sharedStatus(&mutex_attr);
+    EXEC_RETURN_ZERO(0 == pthread_mutexattr_setpshared(&mutex_attr, PTHREAD_PROCESS_SHARED));
+    show_mutex_attr_sharedStatus(&mutex_attr);
+
+    EXEC_RETURN_GOTO(0 == pthread_mutex_init(&lock, &mutex_attr), exit(-1));
+
+    pid_t pid = fork();
+    if (0 == pid)
+    {
+        char *const argv[] = {
+            (char *)&lock,
+        };
+        printf("lock %p\r\n", &lock);
+        execv("./test", argv);
+        printf("err:%d, %s\r\n", errno, strerror(errno));
+        exit(-1);
+    }
+    sleep(1);
+    int count = 5;
+    while (count--)
+    {
+        int ret;
+        ret = pthread_mutex_lock(&lock);
+        if (0 != ret)
+        {
+            if (EOWNERDEAD == ret)
+            {
+                printf("pthread_mutex_consistent solve!\r\n");
+                EXEC_RETURN_ZERO(pthread_mutex_consistent(&lock) == 0); //恢复到阻塞之前的状态
+                EXEC_RETURN_ZERO(pthread_mutex_unlock(&lock) == 0);
+                EXEC_RETURN_ZERO(pthread_mutex_lock(&lock) == 0);
+            }
+            else
+            {
+                printf("ower lock fail!\r\n");
+                sleep(1);
+                continue;
+            }
+        }
+
+        printf("this is [%s] thread!！！！！\r\n", __FUNCTION__);
+        sleep(2);
+        EXEC_RETURN_ZERO(pthread_mutex_unlock(&lock) == 0);
+    }
+
+    waitpid(pid, NULL, 0);
+    return 0;
 }
 #endif

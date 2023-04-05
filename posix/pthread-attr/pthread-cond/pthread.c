@@ -1,9 +1,9 @@
 /**
  * @file pthread_cond.c
  * @author mingyang (mingyang.wang@tuya.com)
- * @brief  pthread_cond线程接口测试
+ * @brief  pthread_cond线程属性接口测试
  * @version 1.0.0
- * @date 2022-11-2
+ * @date 2022-11-18
  *
  * @copyright Copyright (c) 2022
  *
@@ -48,10 +48,10 @@ void *signal_send_thread(void *arg)
     {
         pthread_mutex_lock(&lock);
         /*在这里进行保护数据的操作*/
-        usleep(100*1000);
+        usleep(100 * 1000);
         pthread_mutex_unlock(&lock);
 
-        usleep(300*1000); //等待线程切换, 其他线程进入wait状态, 避免丢信号
+        usleep(300 * 1000);                  //等待线程切换, 其他线程进入wait状态, 避免丢信号
         if (0 == pthread_cond_signal(&cond)) //发送信号, 正常不需要加锁
         {
             printf("[%s] send ok!\r\n", __FUNCTION__);
@@ -73,10 +73,10 @@ void *signal_broadcase_thread(void *arg)
     {
         pthread_mutex_lock(&lock);
         /*在这里进行数据的操作*/
-        usleep(200*1000);
+        usleep(200 * 1000);
         pthread_mutex_unlock(&lock);
 
-        usleep(200*1000); //等待线程切换, 其他线程进入wait状态, 避免丢信号
+        usleep(200 * 1000); //等待线程切换, 其他线程进入wait状态, 避免丢信号
         if (0 == pthread_cond_broadcast(&cond))
         {
             printf("[%s] send ok!\r\n", __FUNCTION__);
@@ -125,7 +125,7 @@ void *signal_timeRecv_thread(void *arg)
 
         pthread_mutex_lock(&lock);
         /*在这里进行数据的操作*/
-        if (0 == pthread_cond_timedwait(&cond, &lock, &now))//会自动去unlock 然后wait
+        if (0 == pthread_cond_timedwait(&cond, &lock, &now)) //会自动去unlock 然后wait
         {
             printf("[%s] timeout signal success!\r\n", __FUNCTION__);
             pthread_mutex_unlock(&lock);
@@ -141,9 +141,56 @@ void *signal_timeRecv_thread(void *arg)
     return (void *)0;
 }
 
-#define CONOF(a) (sizeof(a)/sizeof(a[0]))
+#include <time.h>
+/* in /usr/include/linux/time.h
+#define CLOCK_REALTIME 0
+#define CLOCK_MONOTONIC 1
+#define CLOCK_PROCESS_CPUTIME_ID 2
+#define CLOCK_THREAD_CPUTIME_ID 3
+#define CLOCK_MONOTONIC_RAW 4
+#define CLOCK_REALTIME_COARSE 5
+#define CLOCK_MONOTONIC_COARSE 6
+#define CLOCK_BOOTTIME 7
+#define CLOCK_REALTIME_ALARM 8
+#define CLOCK_BOOTTIME_ALARM 9
+*/
+void show_clock_info(pthread_condattr_t *attr)
+{
+    clockid_t id;
+    EXEC_RETURN_ZERO(0 == pthread_condattr_getclock(attr, &id));
+
+    switch (id)
+    {
+    case CLOCK_REALTIME:
+        printf("get clock CLOCK_REALTIME\r\n");
+        break;
+    case CLOCK_PROCESS_CPUTIME_ID:
+        printf("get clock CLOCK_PROCESS_CPUTIME_ID\r\n");
+        break;
+    case CLOCK_THREAD_CPUTIME_ID:
+        printf("get clock CLOCK_THREAD_CPUTIME_ID\r\n");
+        break;
+    case CLOCK_MONOTONIC:
+        printf("get clock CLOCK_MONOTONIC\r\n");
+        break;
+    default:
+        printf("Unknow Clock Source!\r\n");
+        break;
+    }
+}
+
+#define CONOF(a) (sizeof(a) / sizeof(a[0]))
 int main(int argc, char *argv[])
 {
+    pthread_condattr_t cond_attr;
+
+    EXEC_RETURN_ZERO(0 == pthread_condattr_init(&cond_attr));
+    EXEC_RETURN_ZERO(0 == pthread_condattr_setpshared(&cond_attr, PTHREAD_PROCESS_PRIVATE));
+
+    show_clock_info(&cond_attr);
+    EXEC_RETURN_ZERO(0 == pthread_condattr_setclock(&cond_attr, CLOCK_MONOTONIC));
+    show_clock_info(&cond_attr);
+
     pthread_t tid;
     THREAD_EXEC_CB exec_cb[] = {
         signal_send_thread,
@@ -159,7 +206,7 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
-    if (0 != pthread_cond_init(&cond, NULL))
+    if (0 != pthread_cond_init(&cond, &cond_attr))
     {
         pthread_mutex_destroy(&lock);
         perror("mutex init error!");

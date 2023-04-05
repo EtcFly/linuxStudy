@@ -55,7 +55,7 @@ void *wr_exec_task0(void *arg)
         }
         else
         {
-            usleep(1000*1510);
+            usleep(1000 * 1510);
             printf("thread0 wr lock get [fail]\r\n");
         }
     }
@@ -76,7 +76,7 @@ void *wr_exec_task1(void *arg)
         }
         else
         {
-            usleep(1000*1000);
+            usleep(1000 * 1000);
             printf("thread1 wr try lock get [fail]\r\n");
         }
     }
@@ -89,7 +89,7 @@ void *wr_exec_task2(void *arg)
     while (1)
     {
         struct timespec spec;
-        
+
         clock_gettime(CLOCK_REALTIME, &spec);
         spec.tv_sec += 2;
 
@@ -118,9 +118,9 @@ void *thread_exec_task0(void *arg)
         if (0 == pthread_rwlock_rdlock(&lock))
         {
             printf("this is task[0] thread!\r\n");
-            usleep(100*1000);
+            usleep(100 * 1000);
             pthread_rwlock_unlock(&lock);
-            usleep(323*1000);
+            usleep(323 * 1000);
         }
         else
         {
@@ -140,9 +140,9 @@ void *thread_exec_task1(void *arg)
         if (0 == pthread_rwlock_rdlock(&lock))
         {
             printf("this is task[1] thread!\r\n");
-            usleep(150*1000);
+            usleep(150 * 1000);
             pthread_rwlock_unlock(&lock);
-            usleep(721*1000);
+            usleep(721 * 1000);
         }
         else
         {
@@ -163,12 +163,12 @@ void *thread_exec_task2(void *arg)
         if (0 == pthread_rwlock_tryrdlock(&lock))
         {
             printf("this is task[2] thread!\r\n");
-            usleep(170*1000);
+            usleep(170 * 1000);
             pthread_rwlock_unlock(&lock);
-            usleep(520*1000);
+            usleep(520 * 1000);
         }
         else
-        {   
+        {
             sleep(1);
             printf("try get rdlock [fail]!\r\n");
         }
@@ -184,16 +184,16 @@ void *thread_exec_task3(void *arg)
     while (1)
     {
         struct timespec spec;
-        
+
         clock_gettime(CLOCK_REALTIME, &spec);
         spec.tv_sec += 2;
 
         if (0 == pthread_rwlock_timedrdlock(&lock, &spec))
         {
             printf("this is task[3] thread!\r\n");
-            usleep(230*1000);
+            usleep(230 * 1000);
             pthread_rwlock_unlock(&lock);
-            usleep(470*1000);
+            usleep(470 * 1000);
         }
         else
         {
@@ -209,15 +209,21 @@ typedef void *(*THREAD_EXEC_CB)(void *);
 int main(int argc, char *argv[])
 {
     pthread_t tid;
+    pthread_rwlockattr_t rwlock_attr;
 
-    if (pthread_rwlock_init(&lock, NULL) != 0)
+    EXEC_RETURN_ZERO(0 == pthread_rwlockattr_init(&rwlock_attr));
+    EXEC_RETURN_ZERO(0 == pthread_rwlockattr_setpshared(&rwlock_attr, PTHREAD_PROCESS_PRIVATE)); //设置私有锁
+
+    if (pthread_rwlock_init(&lock, &rwlock_attr) != 0)
     {
         perror("rwlock init fail!");
         exit(-1);
     }
 
-    #define MAX_THREAD_NUM 4 //最大读线程
-    #define MAX_WR_THREAD_NUM 3 //最大写线程
+    EXEC_RETURN_ZERO(0 == pthread_rwlockattr_destroy(&rwlock_attr));
+
+#define MAX_THREAD_NUM 4    //最大读线程
+#define MAX_WR_THREAD_NUM 3 //最大写线程
 
     pthread_t rd_tid[MAX_THREAD_NUM];
     THREAD_EXEC_CB rd_exec_cb[MAX_THREAD_NUM] = {
@@ -234,7 +240,7 @@ int main(int argc, char *argv[])
         wr_exec_task2,
     };
 
-    for (int i=0; i < MAX_WR_THREAD_NUM; i++)
+    for (int i = 0; i < MAX_WR_THREAD_NUM; i++)
     {
         if (0 != pthread_create(&wr_tid[i], NULL, wr_exec_cb[i], NULL))
         {

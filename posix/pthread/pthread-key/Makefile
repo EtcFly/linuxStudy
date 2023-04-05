@@ -1,9 +1,9 @@
 
-TARGE := time
-SRC:= time.c
+TARGE := pthread
+SRC:= pthread.c
 
 $(TARGE):$(SRC)
-	gcc -g -o  $@ $^
+	gcc -o $@ $^ -lpthread
 
 clean:
 	rm -rf $(TARGE)

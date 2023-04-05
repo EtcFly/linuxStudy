@@ -4,6 +4,8 @@
         "pthread.h": "c",
         "unistd.h": "c",
         "time.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "netdb.h": "c",
+        "socket.h": "c"
     }
 }

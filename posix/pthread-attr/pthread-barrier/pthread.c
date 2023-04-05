@@ -23,28 +23,36 @@
  * pthread_barrierattr_setpshared
  */
 
-
 unsigned long long count_index = 0;
 typedef void *(*THREAD_EXEC_CB)(void *);
+
+#define EXEC_RETURN_ZERO(x)              \
+    do                                   \
+    {                                    \
+        if (!(x))                        \
+        {                                \
+            printf("%s [FAIL]\r\n", #x); \
+        }                                \
+    } while (0)
 
 pthread_barrier_t bat;
 void *exec_thread(void *arg)
 {
-    long int value = (long int)(void*)arg;
+    long int value = (long int)(void *)arg;
     usleep(value);
 
     system("date");
-    printf("%s [%ld] ready!!!\r\n", __FUNCTION__, value/1000);
+    printf("%s [%ld] ready!!!\r\n", __FUNCTION__, value / 1000);
 
     int ret = pthread_barrier_wait(&bat);
     if (PTHREAD_BARRIER_SERIAL_THREAD == ret) //最后一个到达线程兼第一个唤醒线程
     {
-        printf("%s [%ld] wakeup running\r\n", __FUNCTION__, value/1000);
+        printf("%s [%ld] wakeup running\r\n", __FUNCTION__, value / 1000);
         system("date");
     }
-    else if (0 == ret)  //其他之前等待的线程
+    else if (0 == ret) //其他之前等待的线程
     {
-        printf("%s [%ld] running\r\n", __FUNCTION__, value/1000);
+        printf("%s [%ld] running\r\n", __FUNCTION__, value / 1000);
         system("date");
     }
     else
@@ -60,16 +68,21 @@ void *exec_thread(void *arg)
 int main(int argc, char *argv[])
 {
     pthread_t tid;
+    pthread_barrierattr_t barrier_attr;
 
-    if (pthread_barrier_init(&bat, NULL, MAX_THREAD_NUM) != 0)
+    EXEC_RETURN_ZERO(0 == pthread_barrierattr_init(&barrier_attr));
+    EXEC_RETURN_ZERO(0 == pthread_barrierattr_setpshared(&barrier_attr, PTHREAD_PROCESS_PRIVATE));
+
+    if (pthread_barrier_init(&bat, &barrier_attr, MAX_THREAD_NUM) != 0)
     {
         perror("barrier err!");
         exit(-1);
     }
+    pthread_barrierattr_destroy(&barrier_attr);
 
-    for (int i=0; i<MAX_THREAD_NUM; i++)
+    for (int i = 0; i < MAX_THREAD_NUM; i++)
     {
-        if (0 != pthread_create(&tid, NULL, exec_thread, (void *)(long int)(1000*1000*i)))
+        if (0 != pthread_create(&tid, NULL, exec_thread, (void *)(long int)(1000 * 1000 * i)))
         {
             pthread_barrier_destroy(&bat);
             perror("can't creat threda!");
