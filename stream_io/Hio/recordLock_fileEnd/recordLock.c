@@ -63,13 +63,17 @@ int main(int argc, char *argv[])
     if (pid == 0) {
         lock.l_len = 0;
         lock.l_start = 0;
-        lock.l_whence = SEEK_SET;
+        lock.l_whence = SEEK_END;
         lock.l_type = F_WRLCK;
         errno = 0;
         int ret = fcntl(fd, F_SETLK, &lock); //子进程设置写锁
         printf("child lock ret:%d %s\n", errno, strerror(errno));
 
+        const char *s = "child write";
+        int len = write(fd, s, strlen(s));
+
         sleep(5); //延迟5s释放写锁
+        lock.l_len = -strlen(s);
         lock.l_type = F_UNLCK;
         errno = 0;
         ret = fcntl(fd, F_SETLK, &lock); //释放写锁
@@ -77,13 +81,13 @@ int main(int argc, char *argv[])
     } else {
         sleep(1); //等待子进程锁住资源
         printf("parent sleep end %d\n", pid);
-        lock.l_len = 15;
-        lock.l_start = 9;
+        lock.l_len = 12; //子进程锁未释放, SEEK_SET一个超过文件当前长度的位置导致文件尾偏移, 等下子进程通过-strlen(len)释放文件锁实际不成功(返回却成功, 疑惑!)
+        lock.l_start = 0;
         lock.l_whence = SEEK_SET;
         lock.l_type = F_RDLCK;
         errno = 0;
         int ret = fcntl(fd, F_SETLKW, &lock); //设置读锁
-        printf("parent lock ret:%d %s, %d\n", errno, strerror(errno), lock.l_pid);
+        printf("parent lock ret:%d %s\n", errno, strerror(errno));
         if (ret != 0) {
             ret = fcntl(fd, F_GETLK, &lock);
             printf("parent get lock ret:%d %s %d, type:%d\n", errno, strerror(errno), lock.l_pid, lock.l_type);
@@ -100,6 +104,8 @@ int main(int argc, char *argv[])
         ret = waitpid(pid, &status, 0); //等待子进程结束
         printf("waipid ret:%d %s\n", errno, strerror(errno));
     }
+    sleep(5);
+    printf("sleep end pid:%d\n", pid);
     close(fd);
     printf("pid:%d open ok!\r\n", pid);
     return 0;
