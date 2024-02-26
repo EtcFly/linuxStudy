@@ -1,0 +1,3 @@
+/home/etcfly/Desktop/linuxStudy/tcpip/DNS_test/CMakeFiles/rebuild_cache.dir
+/home/etcfly/Desktop/linuxStudy/tcpip/DNS_test/CMakeFiles/dns.dir
+/home/etcfly/Desktop/linuxStudy/tcpip/DNS_test/CMakeFiles/edit_cache.dir

@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
             perror("sem open fail");
             return -1;
         }
-    } 
+    }
 
     printf("semfd %p\r\n", sem);
 

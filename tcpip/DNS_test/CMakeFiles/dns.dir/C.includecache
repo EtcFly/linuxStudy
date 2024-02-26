@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/etcfly/Desktop/linuxStudy/tcpip/DNS_test/main.c
+arpa/inet.h
+-
+asm-generic/socket.h
+-
+netinet/in.h
+-
+stdio.h
+-
+error.h
+-
+string.h
+-
+sys/socket.h
+-
+unistd.h
+-
+
